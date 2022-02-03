@@ -30,13 +30,19 @@ df_accepted = df_accepted.drop(df_accepted[df_accepted["Maic input name"].isin(
     ["NMOI", "DU", "Not sure the data we need is available?",
      "Data Unavailable", "Data Unavaialble"])].index)
 
-
+#set length of new date column
+l = len(df_accepted['DOI'])
+#create new column named 'publication date' and set 'type' to datetime
+#need to look into getting rid of time  itself here here
+df_accepted['Publication date'] = pd.Series(np.random.randn(l), index=df_accepted.index)
+df_accepted['Publication date'] = pd.to_datetime(df_accepted['Publication date'], format='%d/%m/%Y')
+# create a fuction to automate date assignement, and add 
 
 #setting crossref variable to make code less painful
 works = Works()
 #retrieve doi metadata as dict - somehow doesnt come out as json?!
 # despite documents saying otherwise
-w1 = works.doi('10.1007/s12250-015-3581-8')
+w1 = works.doi('10.1016/j.micinf.2004.11.004')
 #selecting the date of publishing from the above doi
 # in future could just add the puyblishing date to the main file in the first
 # place - tales up one column and is very useful for retrospective studies
@@ -49,23 +55,18 @@ datetime_object = datetime.strptime(w4, '[%Y, %m, %d]').date()
 
 for i in df_accepted['DOI']:
     d1 = works.doi(i)
-    d2 = d1['published']
-    d3 = d2['date-parts']
-    d4 = (", ".join( repr(o) for o in d3))
-    pub_date = datetime.strptime(d4, '[%Y, %m, %d]').date()
-    #set the new column to the date here
-    
-    
-    
-    
-# 10.1007/s12250-015-3581-8 was on 17th - errorssssssss :( 
-# don't know how to fix
+    try:
+        d2 = d1['published']
+    except TypeError:
+        print(i)
+    else:
+        d3 = d2['date-parts']
+        d4 = (", ".join( repr(o) for o in d3))
+        try:
+            pub_date = datetime.strptime(d4, '[%Y, %m, %d]').date()
+            print(pub_date)
+        except (ValueError, TypeError):
+            print(d4)
 
-#set length of new date column
-l = len(df_accepted['DOI'])
-#create new column named 'publication date' and set 'type' to datetime
-#need to look into getting rid of time  itself here here
-df_accepted['Publication date'] = pd.to_datetime(df_accepted['Publication date'], format='%d/%m/%Y')
-# create a fuction to automate date assignement, and add 
-#the date to the new column
+
 
